@@ -58,9 +58,11 @@ def find_games(file, sieve):
             stats.append(game_stat)
 
     valid_games = list(filter(less_than, stats))                        
-    result = sum([id for id,r,g,b in valid_games])      # sum of IDs of valid games
+    
+    id_sum = sum([id for id,r,g,b in valid_games])      # sum of IDs of valid games
+    power_sum = sum([r*g*b for id,r,g,b in stats])      # sum of 'power' of ALL games
 
-    return result
+    return id_sum, power_sum
 
 
 
@@ -68,6 +70,6 @@ if __name__ == "__main__":
 
     # filename, filter = games with <= 12 R, <= 13 G, <= 14 B
     input = "input02.txt"
-    output = find_games(input, (12,13,14))
+    output = find_games(input, (12,13,14)) 
 
     print(output)
