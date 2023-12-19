@@ -83,28 +83,33 @@ def parse_almanac(almanac: list[str]):
     return seeds, seed_soil, soil_fertilizer, fertilizer_water, water_light, light_temperature, temperature_humidity, humidity_location
 
 
-def get_map(map: list[list[int]]) -> dict:
-    mapping = {}    # key: source value, value: destination value
+def get_map(map: list[list[int]]) -> list[tuple[range, int]]:
+    mappings = [] 
     
     for line in map:
         dst, src, length = line
+        
+        span = range(src, src + length)
+        offset = dst - src
 
-        for _ in range(length):
-            mapping[src] = dst
-
-            src += 1
-            dst += 1
+        mapping = span, offset
+        mappings.append(mapping)
             
-    # print(mapping)
-    return mapping
+    return mappings
     
 
-def seed_to_location(seed: int, maps: list[dict]) -> int:
+def seed_to_location(seed: int, maps: list[list[tuple[range, int]]]) -> int:
     origin = seed
-    for mapping in maps:
-        mapped = mapping.get(origin, origin)
-        origin = mapped
+    for map in maps:
+        for mapping in map:
+            span, offset = mapping
 
+            if origin in span:
+                mapped = origin + offset
+                # print(origin, mapped)
+                origin = mapped
+                break  
+    # print()
     return mapped
 
 
