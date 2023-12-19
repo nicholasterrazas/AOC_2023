@@ -1,3 +1,4 @@
+from collections import defaultdict
 
 # represents the island type 
 # contains number that island represents, and list of coordinates the island sits on
@@ -44,8 +45,7 @@ def get_islands(schematic: list[str]) -> list[Island]:
     return islands
 
 
-def next_to_symbol(island: Island, schematic: list[str]) -> bool:
-    symbols = ['@','#','$','%','&','*','-','+','=','/']
+def next_to_symbol(island: Island, schematic: list[str], symbols: list[str]) -> tuple[bool, Coordinates | None]:
     directions = [
         (0,1),      # N
         (1,1),      # NE
@@ -70,40 +70,64 @@ def next_to_symbol(island: Island, schematic: list[str]) -> bool:
             
             around = schematic[yf][xf]
             if around in symbols:
-                return True
+                return True, (xf, yf)
     
     # if we've checked around all the coordinates of an island, without seeing a symbol, the island is invalid
-    return False
+    return False, None
             
     
+def get_stars(schematic: list[str]) -> list[Coordinates]:
+    star_locations = []
+    
+    for y, line in enumerate(schematic):
+        for x, symbol in enumerate(line):
+            if symbol == "*":
+                star_loc = x,y
+                star_locations.append(star_loc)
+
+    return star_locations
+                
+
+def get_ratios(islands: list[Island], stars: list[Coordinates], schematic: list[str]):
+    gear_ratios = []
+
+    potential_gears = defaultdict(list)
+    for island in islands:
+        has_star, star_location = next_to_symbol(island, schematic, ["*"])
+        if has_star:
+            potential_gears[star_location].append(island)
+
+    for star in potential_gears:
+        ratio = 1
+
+        surrounding_islands = potential_gears[star]
+        if len(surrounding_islands) >= 2:
+            print(surrounding_islands)
+            for island in surrounding_islands:
+                num, coords = island
+                ratio *= num
+
+            gear_ratios.append(ratio)
+
+    return gear_ratios
 
 def calculate_result(file):
-    example = [         # answer for example is 4361
-        "467..114..",
-        "...*......",
-        "..35..633.",
-        "......#...",
-        "617*......",
-        ".....+.58.",
-        "..592.....",
-        "......755.",
-        "...$.*....",
-        ".664.598..",
-    ]
-
     with open(file) as f:
         schematic = f.readlines()
         schematic = [line.strip()+"." for line in schematic]
 
 
     islands = get_islands(schematic)
-    # print(islands)
-    
-    valid_pieces = [island for island in islands if next_to_symbol(island, schematic)]
-    # print(valid_pieces)
+    stars = get_stars(schematic)
+    symbols = ['@','#','$','%','&','*','-','+','=','/']
 
-    result = sum([number for number, coords in valid_pieces])
-    return result
+    valid_pieces = [island for island in islands if next_to_symbol(island, schematic, symbols)[0]]
+    parts_sum = sum([number for number, coords in valid_pieces])
+
+    gear_ratios = get_ratios(islands, stars, schematic)
+    gear_sum = sum(gear_ratios)
+
+    return parts_sum, gear_sum
 
 
 
@@ -112,4 +136,4 @@ if __name__ == "__main__":
     input = "input03.txt"
     output = calculate_result(input)
 
-    print(f"Sum of part numbers: {output}")
+    print(f"Sum of part numbers: {output[0]}, Sum of gear numbers: {output[1]}")
