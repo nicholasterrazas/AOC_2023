@@ -130,6 +130,7 @@ def next_position(curr_pos: loc, movement: tuple[int,int], maze: list[list[str]]
     return next_pos
 
 
+# recursive solution: doesn't work for given input (too large, )
 def travel_path(curr_pos: loc, travelled: list[loc], maze: list[list[str]]) -> list[loc]:
     row, col = curr_pos
     tile = maze[row][col]
@@ -146,6 +147,20 @@ def travel_path(curr_pos: loc, travelled: list[loc], maze: list[list[str]]) -> l
     return travel_path(next_pos, travelled, maze)
 
 
+# iterative solution:
+def travel_path(curr_pos: loc, travelled: list[loc], maze: list[list[str]]) -> list[loc]:
+    travelled.append(curr_pos)    
+    while travelled[-1] != travelled[0]:
+        curr_pos = travelled[-1]
+        prev_pos = travelled[-2]
+        
+        movement = get_movement(prev_pos, curr_pos)
+        next_pos = next_position(curr_pos, movement, maze)
+        travelled.append(next_pos)
+
+    return travelled
+
+
 def get_furthest_point(path1: list[loc], path2: list[loc]):
     
     for idx, (loc1, loc2) in enumerate(zip(path1[1:], path2[1:])):
@@ -155,10 +170,10 @@ def get_furthest_point(path1: list[loc], path2: list[loc]):
 
 def calculate_results(input):
     maze = file_to_maze(input)
-    maze = example_0
-    maze = example_1
-    maze = example_2
-    maze = example_3
+    # maze = example_0
+    # maze = example_1
+    # maze = example_2
+    # maze = example_3
 
     animal_location = find_animal(maze)
     nearby = find_paths(animal_location, maze)
